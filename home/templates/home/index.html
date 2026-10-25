@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="{% static 'home/favicon.svg' %}" type="image/svg+xml" />
+    <link rel="stylesheet" href="{% static 'home/style.css' %}" />
+    <!-- STANDARD JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/all/global.js"></script>
+
+    <!-- THEME JS -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/themes/monarch/global.js"></script>
+
+    <!-- STYLESHEETS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/skeleton.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/themes/monarch/theme.css' rel='stylesheet' />
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@7.1.3/themes/monarch/palettes/purple.css' rel='stylesheet' />
+
+    <script src="{% static 'home/script.js' %}"></script>
+    <title>Office Event Scheduling</title>
+  </head>
+  <body>
+    <div class="app">
+      <div class="calendar-screen">
+        <div id="calendar"></div>
+      </div>
+    </div>
+
+    <p id="saveSuccessMessage" role="status" aria-live="polite" hidden></p>
+
+  <dialog id="statusEventsDialog">
+    <div class="status-events-header">
+      <h2 id="statusEventsHeading"></h2>
+      <button type="button" id="closeStatusEventsBtn">Close</button>
+    </div>
+    <div id="statusEventList"></div>
+  </dialog>
+
+  <dialog id="eventDialog">
+    <form id="eventForm">
+        {% csrf_token %}
+
+        <h2 id="eventFormHeading">Schedule an Event</h2>
+        <p id="selectedDate"></p>
+
+        <label for="eventTitle">Event Title</label>
+        <input
+            type="text"
+            id="eventTitle"
+            name="title"
+            maxlength="200"
+            required
+        >
+
+        <label for="eventDepartment">Department</label>
+        <input
+            type="text"
+            id="eventDepartment"
+            name="department"
+            maxlength="150"
+            required
+        >
+
+        <label for="eventVenue">Venue</label>
+        
+        <select id="eventVenue" name="venue" required> 
+          
+            <option value="">Select a venue</option>
+            <option value="venue1">CNPAHS AVR</option>
+            <option value="venue2">CIT AVR</option>
+            <option value="venue3">CAS AVR</option>
+            <option value="venue4">ST AVR</option>
+            <option value="venue5">GYM</option>
+            <option value="venue6">INTERFAITH</option>
+            <option value="venue7">CTED MINI THEATRE</option>
+            <option value="venue8">CIT OPEN GROUNDS</option>
+            <option value="venue9">LIBRARY</option>
+            <option value="venue10">OPEN COURT</option>
+            <option value="venue11">MIS ROOM</option>
+            
+        </select> 
+
+
+        <label for="eventStartDate" id="eventStartDateLabel" hidden>Start Date</label>
+        <input type="date" id="eventStartDate" name="start_date" hidden>
+
+        <label for="eventStart">Start Time</label>
+        <input
+            type="time"
+            id="eventStart"
+            name="start_time"
+            required
+        >
+
+        <label for="eventEndDate" id="eventEndDateLabel" hidden>End Date</label>
+        <input type="date" id="eventEndDate" name="end_date" hidden>
+
+        <label for="eventEnd">End Time</label>
+        <input
+            type="time"
+            id="eventEnd"
+            name="end_time"
+            required
+        >
+
+        <label for="eventStatus" id="eventStatusLabel" hidden>Status</label>
+        <select id="eventStatus" name="status" hidden></select>
+
+        <section id="rescheduleFields" hidden>
+            <h3>Reschedule To</h3>
+
+            <label for="rescheduleStartDate">New Start Date</label>
+            <input type="date" id="rescheduleStartDate">
+
+            <label for="rescheduleStartTime">New Start Time</label>
+            <input type="time" id="rescheduleStartTime">
+
+            <label for="rescheduleEndDate">New End Date</label>
+            <input type="date" id="rescheduleEndDate">
+
+            <label for="rescheduleEndTime">New End Time</label>
+            <input type="time" id="rescheduleEndTime">
+
+            <label for="rescheduleReason">Rescheduling Reason (optional)</label>
+            <textarea id="rescheduleReason" name="rescheduling_reason" rows="3"></textarea>
+        </section>
+
+        <p id="formError" role="alert"></p>
+
+        <div class="formButtons">
+            <button type="submit" id="saveEventBtn">Save Event</button>
+            <button type="button" id="cancelEventBtn">Cancel</button>
+        </div>
+    </form>
+</dialog>
+  </body>
+</html>

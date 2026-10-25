@@ -1,0 +1,354 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    box-sizing: border-box;
+    color: #111827;
+    background: #f4f3fb;
+    overflow: hidden;
+}
+
+.app,
+.calendar-screen {
+    height: 100%;
+    min-height: 0;
+}
+
+.calendar-screen {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: 6px 8px 8px;
+}
+
+#calendar {
+    box-sizing: border-box;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    width: 100%;
+    font-family: revert;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 0.4em;
+}
+
+.fc .fc-daygrid-day-frame {
+    padding: 2px 4px 4px;
+}
+
+.fc .fc-daygrid-day-top {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: row;
+    padding: 2px 0 0;
+}
+
+.fc .fc-daygrid-day-number {
+    float: none;
+    display: block;
+    width: 100%;
+    text-align: center;
+    padding: 2px 4px 4px;
+}
+
+.fc .fc-daygrid-day-events {
+    margin-top: 0;
+}
+
+.day-status-summaries {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 2px 2px 4px;
+    pointer-events: auto;
+    position: relative;
+    z-index: 5;
+}
+
+.day-status-summaries button {
+    appearance: none;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.day-status-summaries button:hover {
+    text-decoration: underline;
+}
+
+.day-status-summaries .status-pending {
+    color: #6D52A3;
+}
+
+.day-status-summaries .status-approved {
+    color: #25855A;
+}
+
+.day-status-summaries .status-rescheduled {
+    color: #D97706;
+}
+
+.day-status-summaries .status-canceled {
+    color: #C2414B;
+}
+
+.fc .event-status-pending {
+    background-color: #6D52A3;
+    border-color: #6D52A3;
+}
+
+.fc .event-status-approved {
+    background-color: #25855A;
+    border-color: #25855A;
+}
+
+.fc .event-status-rescheduled {
+    background-color: #D97706;
+    border-color: #D97706;
+}
+
+.fc .event-status-canceled {
+    background-color: #C2414B;
+    border-color: #C2414B;
+    text-decoration: line-through;
+    opacity: 0.9;
+}
+
+#statusEventsDialog,
+#eventDialog {
+    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+    
+}
+
+#statusEventsDialog {
+    width: min(520px, calc(100% - 40px));
+    max-height: 85vh;
+    overflow: hidden;
+    border: none;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+#statusEventsDialog[open] {
+    display: flex;
+    flex-direction: column;
+}
+
+.status-events-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.status-events-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+#closeStatusEventsBtn,
+#cancelEventBtn {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+    background: #e5e7eb;
+    color: #111827;
+}
+
+#statusEventList {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#saveSuccessMessage {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+    max-width: calc(100% - 40px);
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    color: #25855A;
+    font-weight: 600;
+}
+
+#rescheduleFields {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid #d8d3e8;
+    border-radius: 8px;
+    background: #f8f7fc;
+}
+
+#rescheduleFields[hidden] {
+    display: none;
+}
+
+#rescheduleFields h3 {
+    margin: 0;
+}
+
+.event-card {
+    background: #f8f7fc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 14px 16px;
+    
+}
+
+.event-card h2 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+}
+
+.event-card p {
+    margin: 4px 0;
+    color: #374151;
+}
+
+.event-card .event-status {
+    display: block;
+    margin-top: 6px;
+    font-weight: 600;
+}
+
+.event-card .event-status.pending {
+    color: #6D52A3;
+}
+
+.event-card .event-status.approved {
+    color: #25855A;
+}
+
+.event-card .event-status.rescheduled {
+    color: #D97706;
+}
+
+.event-card .event-status.canceled {
+    color: #C2414B;
+}
+
+.event-card .edit-event-btn {
+    margin-top: 12px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+    background: #6366f1;
+    color: #ffffff;
+}
+
+.empty-events {
+    color: #6b7280;
+    margin: 12px 0;
+}
+
+#statusEventsDialog::backdrop,
+#eventDialog::backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#eventDialog {
+    width: min(440px, calc(100% - 40px));
+    max-height: 85vh;
+    overflow-y: auto;
+    border: none;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+#eventForm {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#eventForm h2 {
+    margin: 0;
+}
+
+#selectedDate {
+    margin: 0 0 8px;
+    color: #666;
+}
+
+#eventForm label {
+    font-weight: 600;
+}
+
+#eventForm input,
+#eventForm select,
+#eventForm textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.formButtons {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.formButtons button {
+    flex: 1;
+    padding: 11px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit;
+}
+
+#saveEventBtn {
+    background: #6366f1;
+    color: white;
+}
+
+#formError {
+    color: #b91c1c;
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    body {
+        overflow: auto;
+    }
+
+    .calendar-screen {
+        min-height: 100vh;
+        height: 100vh;
+    }
+
+    .day-status-summaries button {
+        font-size: 10px;
+    }
+}
