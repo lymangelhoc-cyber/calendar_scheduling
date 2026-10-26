@@ -3,13 +3,13 @@ import json
 
 from django.core.exceptions import ValidationError
 from django.db import transaction
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.http import JsonResponse
 from django.utils.dateparse import parse_datetime
 from django.utils import timezone
-from django.views.decorators.http import require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 
-from .models import Event, EventScheduleHistory
+from .models import ActivityLog, Event, EventScheduleHistory
 
 
 def home(request):
@@ -25,9 +25,51 @@ def _event_json(event):
         "end": event.end_time.isoformat(),
         "venue": event.venue,
         "department": event.department,
+        "needs": event.needs,
         "status": event.status,
         "rescheduling_reason": history.reason if history else "",
     }
+
+
+def _create_activity_log(request, event, action, details):
+    ActivityLog.objects.create(
+        event=event,
+        event_title=event.title,
+        action=action,
+        details=details,
+        user=request.user if request.user.is_authenticated else None,
+    )
+
+
+def approved_events(request):
+    events = Event.objects.filter(
+        status=Event.Status.APPROVED
+    ).order_by("start_time")
+
+    return render(
+        request,
+        "home/approved_events.html",
+        {"events": events},
+    )
+
+
+@require_POST
+def mark_event_done(request, event_id):
+    event = get_object_or_404(
+        Event,
+        pk=event_id,
+        status=Event.Status.APPROVED,
+    )
+    event.status = Event.Status.DONE
+    with transaction.atomic():
+        event.save(update_fields=["status"])
+        _create_activity_log(
+            request,
+            event,
+            "completed",
+            "Event marked as done.",
+        )
+    return redirect("approved_events")
 
 
 def _parse_event_times(body):
@@ -50,6 +92,27 @@ def _validation_response(error):
         )
     return JsonResponse({"message": error.messages[0]}, status=400)
 
+def event_history(request):
+    events = Event.objects.filter(
+        status=Event.Status.DONE
+    ).order_by("-start_time")
+
+    return render(
+        request,
+        "home/event_history.html",
+        {"events": events},
+    )
+
+
+@require_GET
+def activity_logs(request):
+    logs = ActivityLog.objects.select_related("user").all()
+    return render(
+        request,
+        "home/activity_logs.html",
+        {"activity_logs": logs},
+    )
+
 
 @require_http_methods(["GET", "POST"])
 def events_api(request):
@@ -61,12 +124,16 @@ def events_api(request):
     try:
         body = json.loads(request.body)
         start_time, end_time = _parse_event_times(body)
+        needs = body.get("needs")
+        if needs is not None and not isinstance(needs, str):
+            raise ValueError("Invalid event needs.")
         event = Event(
             title=body["title"],
             start_time=start_time,
             end_time=end_time,
             venue=body["venue"],
             department=body["department"],
+            needs=needs.strip() or None if needs is not None else None,
             status=Event.Status.PENDING,
         )
     except (json.JSONDecodeError, UnicodeDecodeError, KeyError, TypeError, ValueError):
@@ -77,7 +144,14 @@ def events_api(request):
     except ValidationError as error:
         return _validation_response(error)
 
-    event.save()
+    with transaction.atomic():
+        event.save()
+        _create_activity_log(
+            request,
+            event,
+            "created",
+            "Event scheduled.",
+        )
 
     return JsonResponse(
         {"id": event.id, "message": "Event saved"},
@@ -117,12 +191,20 @@ def event_detail_api(request, event_id):
         title = body["title"]
         department = body["department"]
         venue = body["venue"]
+        needs = body.get("needs", event.needs)
+        if needs is not None and not isinstance(needs, str):
+            raise ValueError("Invalid event needs.")
+        needs = needs.strip() or None if needs is not None else None
         reason = body.get("rescheduling_reason", "")
         if not isinstance(reason, str):
             raise ValueError("Invalid rescheduling reason.")
     except (json.JSONDecodeError, UnicodeDecodeError, KeyError, TypeError, ValueError):
         return JsonResponse({"message": "Invalid event data."}, status=400)
 
+    previous_title = event.title
+    previous_department = event.department
+    previous_needs = event.needs
+    previous_status = event.status
     previous_start = event.start_time
     previous_end = event.end_time
     previous_venue = event.venue
@@ -134,6 +216,7 @@ def event_detail_api(request, event_id):
         event.title = title
         event.department = department
         event.venue = venue
+        event.needs = needs
         event.start_time = start_time
         event.end_time = end_time
         event.status = status
@@ -151,5 +234,27 @@ def event_detail_api(request, event_id):
                 previous_venue=previous_venue,
                 reason=reason,
             )
+        changed_fields = []
+        if previous_title != event.title:
+            changed_fields.append("title")
+        if previous_department != event.department:
+            changed_fields.append("department")
+        if previous_needs != event.needs:
+            changed_fields.append("needs")
+        if schedule_changed:
+            changed_fields.append("schedule")
+        if previous_status != status:
+            changed_fields.append("status")
+
+        if changed_fields:
+            action = "updated"
+            if previous_status != status:
+                action = {
+                    Event.Status.APPROVED: "approved",
+                    Event.Status.CANCELED: "canceled",
+                    Event.Status.DONE: "completed",
+                }.get(status, "updated")
+            details = "Updated: " + ", ".join(changed_fields) + "."
+            _create_activity_log(request, event, action, details)
 
     return JsonResponse(_event_json(event))

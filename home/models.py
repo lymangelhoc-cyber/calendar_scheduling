@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.conf import settings as auth_settings
 
 VENUES = [
     ("venue1", "CNPAHS AVR"),
@@ -23,12 +24,19 @@ class Event(models.Model):
         APPROVED = "approved", "Approved"
         RESCHEDULED = "rescheduled", "Rescheduled"
         CANCELED = "canceled", "Canceled"
+        DONE = "done", "Done"
 
     ALLOWED_TRANSITIONS = {
         Status.PENDING: {Status.PENDING, Status.APPROVED, Status.CANCELED},
-        Status.APPROVED: {Status.APPROVED, Status.RESCHEDULED, Status.CANCELED},
+        Status.APPROVED: {
+            Status.APPROVED,
+            Status.RESCHEDULED,
+            Status.CANCELED,
+            Status.DONE,
+        },
         Status.RESCHEDULED: {Status.RESCHEDULED, Status.APPROVED, Status.CANCELED},
         Status.CANCELED: {Status.CANCELED},
+        Status.DONE: {Status.DONE},
     }
 
     title = models.CharField(max_length=200)
@@ -41,6 +49,8 @@ class Event(models.Model):
         choices=Status.choices,
         default=Status.PENDING,
     )
+    needs = models.CharField(max_length=100, null=True, blank=True)
+    description = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def schedule_changed(self, start_time, end_time, venue):
@@ -105,7 +115,7 @@ class Event(models.Model):
             venue=self.venue,
             start_time__lt=self.end_time,
             end_time__gt=self.start_time,
-        ).exclude(status=Event.Status.CANCELED)
+        ).exclude(status__in=[Event.Status.CANCELED, Event.Status.DONE])
         if self.pk:
             overlapping_events = overlapping_events.exclude(pk=self.pk)
 
@@ -114,6 +124,41 @@ class Event(models.Model):
 
     def __str__(self):
         return f"{self.title} - {self.get_status_display()}"
+
+
+class ActivityLog(models.Model):
+    ACTION_CHOICES = [
+        ("created", "Event Created"),
+        ("updated", "Event Updated"),
+        ("approved", "Event Approved"),
+        ("canceled", "Event Canceled"),
+        ("completed", "Event Completed"),
+        ("deleted", "Event Deleted"),
+    ]
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="activity_logs",
+    )
+    event_title = models.CharField(max_length=255)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    details = models.TextField(blank=True)
+    user = models.ForeignKey(
+        auth_settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-timestamp"]
+
+    def __str__(self):
+        return f"{self.get_action_display()} - {self.event_title}"
 
 
 class EventScheduleHistory(models.Model):
