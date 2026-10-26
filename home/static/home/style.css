@@ -6,35 +6,97 @@ body {
 
 body {
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
     color: #111827;
     background: #f4f3fb;
     overflow: hidden;
 }
 
-.app,
-.calendar-screen {
-    height: 100%;
+.top-nav {
+    box-sizing: border-box;
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 58px;
+    padding: 0 24px;
+    border-bottom: 1px solid #dedbd2;
+    background: #fffefa;
+    color: #343b32;
+    font-family: inherit;
+}
+
+.top-nav a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.top-nav-brand {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.top-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.top-nav-links a {
+    padding: 9px 12px;
+    border-radius: 6px;
+    color: #555b52;
+    font-size: 0.95rem;
+}
+
+.top-nav-links a:hover,
+.top-nav-links a[aria-current="page"] {
+    background: #eeede6;
+    color: #343b32;
+}
+
+.app {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
     min-height: 0;
 }
 
 .calendar-screen {
     box-sizing: border-box;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     padding: 6px 8px 8px;
+    min-height: 0;
 }
 
 #calendar {
     box-sizing: border-box;
     flex: 1 1 auto;
     min-height: 0;
-    height: 100%;
     width: 100%;
     font-family: revert;
 }
 
 .fc .fc-toolbar.fc-header-toolbar {
     margin-bottom: 0.4em;
+}
+
+#calendar .fc .fc-prev-button,
+#calendar .fc .fc-next-button {
+    color: #3f4638;
+    background: #f1f0ea;
+    border-color: #d6d3c8;
+    box-shadow: none;
+}
+
+#calendar .fc .fc-prev-button:hover,
+#calendar .fc .fc-next-button:hover {
+    background: #e7e5dc;
+    border-color: #c7c4b8;
 }
 
 .fc .fc-daygrid-day-frame {
@@ -101,6 +163,10 @@ body {
     color: #D97706;
 }
 
+.day-status-summaries .status-done {
+    color: #475569;
+}
+
 .day-status-summaries .status-canceled {
     color: #C2414B;
 }
@@ -120,6 +186,11 @@ body {
     border-color: #D97706;
 }
 
+.fc .event-status-done {
+    background-color: #475569;
+    border-color: #475569;
+}
+
 .fc .event-status-canceled {
     background-color: #C2414B;
     border-color: #C2414B;
@@ -128,9 +199,89 @@ body {
 }
 
 #statusEventsDialog,
-#eventDialog {
-    font-family: system-ui, -apple-system, Segoe UI, sans-serif;
-    
+#eventDialog,
+#markDoneDialog {
+    font-family: inherit;
+}
+
+#markDoneDialog {
+    width: min(440px, calc(100% - 40px));
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 28px;
+    color: #1f2937;
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
+}
+
+#markDoneDialog::backdrop {
+    background: rgba(17, 24, 39, 0.52);
+    backdrop-filter: blur(3px);
+}
+
+.mark-done-dialog-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.mark-done-dialog-icon {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: 14px;
+    background: #e8f5ed;
+    color: #25855a;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.mark-done-dialog-content h2 {
+    margin: 2px 0 0;
+    font-size: 1.35rem;
+}
+
+.mark-done-dialog-content p {
+    margin: 0;
+    color: #6b7280;
+    line-height: 1.55;
+}
+
+.mark-done-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.mark-done-dialog-actions button {
+    min-height: 42px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 10px;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.mark-done-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.mark-done-cancel:hover {
+    background: #e5e7eb;
+}
+
+.mark-done-confirm {
+    background: #25855a;
+    color: #ffffff;
+}
+
+.mark-done-confirm:hover {
+    background: #1f704b;
 }
 
 #statusEventsDialog {
@@ -248,6 +399,10 @@ body {
     color: #D97706;
 }
 
+.event-card .event-status.done {
+    color: #475569;
+}
+
 .event-card .event-status.canceled {
     color: #C2414B;
 }
@@ -343,12 +498,228 @@ body {
         overflow: auto;
     }
 
+    .top-nav {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+
+    .top-nav-links {
+        flex-wrap: wrap;
+        margin: 0 -8px;
+    }
+
+    .app {
+        min-height: calc(100vh - 100px);
+    }
+
     .calendar-screen {
-        min-height: 100vh;
-        height: 100vh;
+        min-height: calc(100vh - 100px);
+        height: auto;
     }
 
     .day-status-summaries button {
         font-size: 10px;
+    }
+}
+
+
+/* Approved Events Page */
+.approved-page {
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 32px 32px 40px;
+    color: #1f2937;
+    font-family: inherit;
+    background: linear-gradient(180deg, #f8f2f8 0%, #f4f3fb 100%);
+    min-height: calc(100vh - 58px);
+    box-sizing: border-box;
+}
+
+.approved-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+}
+
+.approved-header h1 {
+    margin: 0 0 8px;
+    font-size: clamp(2rem, 3.4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #111827;
+}
+
+.approved-header p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 1.05rem;
+}
+
+.event-history-search {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: min(360px, 100%);
+}
+
+.event-history-search label {
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.event-history-search input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1f2937;
+    font: inherit;
+}
+
+.event-history-search input:focus {
+    border-color: #8b8f83;
+    outline: 2px solid rgba(139, 143, 131, 0.2);
+}
+
+.back-button {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #7c3aed, #6366f1);
+    color: white;
+    text-decoration: none;
+    white-space: nowrap;
+    font-weight: 600;
+    box-shadow: 0 8px 18px rgba(99, 102, 241, 0.2);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.back-button:hover {
+    background: linear-gradient(135deg, #6d28d9, #4f46e5);
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(99, 102, 241, 0.26);
+}
+
+.approved-table-container {
+    max-height: min(70vh, calc(100vh - 220px));
+    overflow: auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.approved-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+}
+
+.approved-table th,
+.approved-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #eef2f7;
+    vertical-align: top;
+}
+
+.approved-table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.approved-table tbody tr {
+    transition: background 0.15s ease;
+}
+
+.approved-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.approved-event-row {
+    cursor: pointer;
+}
+
+.approved-event-row.is-selected {
+    background: #f3f0ff;
+}
+
+.mark-done-form[hidden] {
+    display: none;
+}
+
+.mark-done-button {
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #25855a;
+    color: #ffffff;
+    font: inherit;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.mark-done-button:hover {
+    background: #1f704b;
+}
+
+.approved-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.approved-table td:nth-child(1),
+.approved-table td:nth-child(2) {
+    white-space: nowrap;
+}
+
+.venue-cell {
+    font-weight: 800;
+    color: #111827;
+}
+
+.empty-message {
+    padding: 36px !important;
+    text-align: center;
+    color: #6b7280;
+}
+
+@media (max-width: 768px) {
+    .approved-page {
+        padding: 18px 16px 24px;
+    }
+
+    .approved-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .event-history-search {
+        width: 100%;
+    }
+
+    .approved-table th,
+    .approved-table td {
+        padding: 12px 10px;
+    }
+
+    .approved-table-container {
+        max-height: calc(100vh - 250px);
     }
 }

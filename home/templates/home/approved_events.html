@@ -1,0 +1,101 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approved Events | Calendar Scheduling</title>
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+</head>
+<body>
+    <nav class="top-nav" aria-label="Main navigation">
+        <a class="top-nav-brand" href="{% url 'home' %}">Event Scheduling</a>
+        <div class="top-nav-links">
+            <a href="{% url 'home' %}">Calendar</a>
+            <a href="{% url 'approved_events' %}" aria-current="page">Approved Events</a>
+            <a href="{% url 'event_history' %}">Event History</a>
+            <a href="{% url 'activity_logs' %}">Activity Logs</a>
+        </div>
+    </nav>
+    <main class="approved-page">
+        <header class="approved-header">
+            <div>
+                <h1>Approved Events</h1>
+                <p>Official schedule of approved events</p>
+            </div>
+        </header>
+
+        <section class="approved-table-container">
+            <table class="approved-table">
+                <thead>
+                    <tr>
+                        <th>DATE</th>
+                        <th>TIME</th>
+                        <th>VENUE</th>
+                        <th>DEPT</th>
+                        <th>EVENT</th>
+                        <th>NEEDS</th>
+                        <th aria-label="Actions"></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for event in events %}
+                        <tr
+                            class="approved-event-row"
+                            tabindex="0"
+                            aria-label="Show action for {{ event.title }}"
+                            aria-expanded="false"
+                        >
+                            <td>{{ event.start_time|date:"m/d/Y" }}</td>
+                            <td>
+                                {{ event.start_time|date:"g:i A" }}
+                                –
+                                {{ event.end_time|date:"g:i A" }}
+                            </td>
+                            <td class="venue-cell">{{ event.get_venue_display }}</td>
+                            <td>{{ event.department }}</td>
+                            <td>{{ event.title }}</td>
+                            <td>{{ event.needs|default:"—" }}</td>
+                            <td>
+                                <form
+                                    class="mark-done-form"
+                                    method="post"
+                                    action="{% url 'mark_event_done' event.id %}"
+                                    hidden
+                                >
+                                    {% csrf_token %}
+                                    <button class="mark-done-button" type="submit">
+                                        Mark as done
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="empty-message">
+                                No approved events scheduled.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <dialog id="markDoneDialog" aria-labelledby="markDoneDialogTitle" aria-describedby="markDoneDialogMessage">
+        <div class="mark-done-dialog-content">
+            <span class="mark-done-dialog-icon" aria-hidden="true">✓</span>
+            <h2 id="markDoneDialogTitle">Mark event as done?</h2>
+            <p id="markDoneDialogMessage">
+                This event will be removed from the approved events list.
+            </p>
+            <div class="mark-done-dialog-actions">
+                <button class="mark-done-cancel" type="button">Cancel</button>
+                <button class="mark-done-confirm" type="button">Mark as done</button>
+            </div>
+        </div>
+    </dialog>
+    <script src="{% static 'home/approved_events.js' %}?v=2" defer></script>
+</body>
+</html>

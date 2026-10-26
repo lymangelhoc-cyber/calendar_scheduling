@@ -1,0 +1,77 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event History</title>
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+</head>
+<body>
+    <nav class="top-nav" aria-label="Main navigation">
+        <a class="top-nav-brand" href="{% url 'home' %}">Event Scheduling</a>
+        <div class="top-nav-links">
+            <a href="{% url 'home' %}">Calendar</a>
+            <a href="{% url 'approved_events' %}">Approved Events</a>
+            <a href="{% url 'event_history' %}" aria-current="page">Event History</a>
+            <a href="{% url 'activity_logs' %}">Activity Logs</a>
+        </div>
+    </nav>
+    <main class="approved-page event-history-page">
+        <header class="approved-header">
+            <div>
+                <h1>Event History</h1>
+                <p>Completed events.</p>
+            </div>
+            <div class="event-history-search">
+                <label for="eventHistorySearch">Search events</label>
+                <input
+                    id="eventHistorySearch"
+                    class="table-search-input"
+                    type="search"
+                    placeholder="Search by event, department, venue, or date"
+                    autocomplete="off"
+                >
+            </div>
+        </header>
+
+        <section class="approved-table-container">
+            <table class="approved-table">
+                <thead>
+                    <tr>
+                        <th>EVENT</th>
+                        <th>DEPT</th>
+                        <th>VENUE</th>
+                        <th>START</th>
+                        <th>END</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                        <tr class="event-history-row table-search-row">
+                            <td>{{ event.title }}</td>
+                            <td>{{ event.department }}</td>
+                            <td class="venue-cell">{{ event.get_venue_display }}</td>
+                            <td>{{ event.start_time|date:"M d, Y h:i A" }}</td>
+                            <td>{{ event.end_time|date:"M d, Y h:i A" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="empty-message no-completed-events">
+                                No completed events yet.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr id="eventHistoryNoMatches" class="table-search-no-matches" hidden>
+                        <td colspan="5" class="empty-message">
+                            No matching events found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script src="{% static 'home/event_history.js' %}" defer></script>
+</body>
+</html>

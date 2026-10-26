@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const selectedDateText = document.getElementById("selectedDate");
     const titleInput = document.getElementById("eventTitle");
     const departmentInput = document.getElementById("eventDepartment");
+    const needsInput = document.getElementById("eventNeeds");
     const venueInput = document.getElementById("eventVenue");
     const startDateInput = document.getElementById("eventStartDate");
     const startDateLabel = document.getElementById("eventStartDateLabel");
@@ -30,18 +31,20 @@ document.addEventListener("DOMContentLoaded", function () {
     const errorText = document.getElementById("formError");
     const saveButton = document.getElementById("saveEventBtn");
 
-    const STATUS_ORDER = ["pending", "approved", "rescheduled", "canceled"];
+    const STATUS_ORDER = ["pending", "approved", "rescheduled"];
     const STATUS_LABELS = {
         pending: "Pending",
         approved: "Approved",
         rescheduled: "Rescheduled",
+        done: "Done",
         canceled: "Canceled",
     };
     const STATUS_TRANSITIONS = {
         pending: ["pending", "approved", "canceled"],
-        approved: ["approved", "rescheduled", "canceled"],
+        approved: ["approved", "rescheduled", "canceled", "done"],
         rescheduled: ["rescheduled", "approved", "canceled"],
         canceled: ["canceled"],
+        done: ["done"],
     };
 
     let selectedDate = "";
@@ -114,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
             pending: new Set(),
             approved: new Set(),
             rescheduled: new Set(),
+            done: new Set(),
             canceled: new Set(),
         };
 
@@ -238,7 +242,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (currentViewType() === "dayGridMonth") {
             return [];
         }
-        return events.map(decorateEvent);
+        return events
+            .filter(function (event) {
+                return STATUS_ORDER.includes(eventStatus(event));
+            })
+            .map(decorateEvent);
     }
 
     function reloadEventsFromServer() {
@@ -376,6 +384,7 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedDate = startDate;
         titleInput.value = event.title;
         departmentInput.value = event.department || "";
+        needsInput.value = event.needs || "";
         venueInput.value = event.venue || "";
         startDateInput.value = startDate;
         endDateInput.value = endDate;
@@ -418,11 +427,12 @@ document.addEventListener("DOMContentLoaded", function () {
         statusEventList.replaceChildren();
 
         if (!events.length) {
-            const empty = document.createElement("p");
-            empty.className = "empty-events";
-            empty.textContent = "No events in this group.";
-            statusEventList.appendChild(empty);
-            return;
+            if (statusEventsDialog.open) {
+                statusEventsDialog.close();
+            }
+            listContext = null;
+            renderAllSummaries();
+            return false;
         }
 
         events.forEach(function (event) {
@@ -444,6 +454,9 @@ document.addEventListener("DOMContentLoaded", function () {
             venueValue.textContent = venueLabel(event.venue);
             venueLine.appendChild(venueValue);
 
+            const needsLine = document.createElement("p");
+            needsLine.textContent = "Needs: " + (event.needs || "—");
+
             const startLine = document.createElement("p");
             startLine.textContent =
                 "Start: " + formatDisplayDate(start) + " " + formatDisplayTime(start);
@@ -459,6 +472,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const details = [
                 heading,
                 departmentLine,
+                needsLine,
                 venueLine,
                 startLine,
                 endLine,
@@ -484,11 +498,14 @@ document.addEventListener("DOMContentLoaded", function () {
             );
             statusEventList.appendChild(card);
         });
+        return true;
     }
 
     function openStatusList(dateStr, status) {
         listContext = { dateStr: dateStr, status: status };
-        renderStatusList(dateStr, status);
+        if (!renderStatusList(dateStr, status)) {
+            return;
+        }
         if (!statusEventsDialog.open) {
             statusEventsDialog.showModal();
         }
@@ -650,6 +667,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const payload = {
                 title: title,
                 department: department,
+                needs: needsInput.value.trim() || null,
                 venue: venue,
                 start: startLocal.toISOString(),
                 end: endLocal.toISOString()

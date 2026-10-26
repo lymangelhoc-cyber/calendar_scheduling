@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs | Calendar Scheduling</title>
+    <link rel="stylesheet" href="{% static 'home/style.css' %}">
+</head>
+<body>
+    <nav class="top-nav" aria-label="Main navigation">
+        <a class="top-nav-brand" href="{% url 'home' %}">Event Scheduling</a>
+        <div class="top-nav-links">
+            <a href="{% url 'home' %}">Calendar</a>
+            <a href="{% url 'approved_events' %}">Approved Events</a>
+            <a href="{% url 'event_history' %}">Event History</a>
+            <a href="{% url 'activity_logs' %}" aria-current="page">Activity Logs</a>
+        </div>
+    </nav>
+    <main class="approved-page">
+        <header class="approved-header">
+            <div>
+                <h1>Activity Logs</h1>
+                <p>Read-only record of event activity.</p>
+            </div>
+            <div class="event-history-search">
+                <label for="activityLogSearch">Search activity logs</label>
+                <input
+                    id="activityLogSearch"
+                    class="table-search-input"
+                    type="search"
+                    placeholder="Search by action, event, details, or user"
+                    autocomplete="off"
+                >
+            </div>
+        </header>
+
+        <section class="approved-table-container">
+            <table class="approved-table">
+                <thead>
+                    <tr>
+                        <th>DATE &amp; TIME</th>
+                        <th>ACTION</th>
+                        <th>EVENT</th>
+                        <th>DETAILS</th>
+                        <th>USER</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in activity_logs %}
+                        <tr class="table-search-row">
+                            <td>{{ log.timestamp|date:"M d, Y h:i A" }}</td>
+                            <td>{{ log.get_action_display }}</td>
+                            <td>{{ log.event_title }}</td>
+                            <td>{{ log.details|default:"—" }}</td>
+                            <td>{{ log.user.get_username|default:"System" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="empty-message no-searchable-rows">
+                                No activity has been recorded yet.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr class="table-search-no-matches" hidden>
+                        <td colspan="5" class="empty-message">
+                            No matching activity logs found.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+    <script src="{% static 'home/event_history.js' %}" defer></script>
+</body>
+</html>
